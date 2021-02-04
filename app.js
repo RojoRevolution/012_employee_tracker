@@ -28,7 +28,7 @@ const startOptions = [
     }
 ]
 
-
+// Intro
 const init = () => {
     log(chalk.blue('\n-------------------------------------------'))
     log(chalk.red('Welcome to The Employee Tracker Application'));
@@ -36,6 +36,7 @@ const init = () => {
     startMenu();
 };
 
+// Initial Menu / Choices
 const startMenu = () => {
     log(chalk.green('\n========================================= \n'))
     inquirer.prompt(startOptions)
@@ -50,7 +51,7 @@ const startMenu = () => {
                     break;
 
                 case 'View All Employees by Role':
-                    // DO SOMETHING
+                    viewAllRoles();
                     break;
                 case '--- Exit App ---':
                     log(chalk.blue('\nxxxxxxxxxxxxxxxxxxxxxxxxxx'))
@@ -62,6 +63,7 @@ const startMenu = () => {
         })
 }
 
+// View All Employees
 const viewAll = () => {
     let query =
         'SELECT * ' + 'FROM employee ' +
@@ -76,7 +78,7 @@ const viewAll = () => {
             startMenu();
         })
 }
-
+// View All Employees By Department
 const viewAllDept = () => {
     connection.query(`SELECT * FROM department`,
         (err, res) => {
@@ -95,13 +97,13 @@ const viewAllDept = () => {
                         }
                     },
                 ]).then((response) => {
-                    console.log(response.allDepts);
                     // USE ? IN QUERY and pass in variable inside the [] in connection.query
                     let query =
-                        "SELECT ?, roles.role_name, roles.salary, employee.first_name, employee.last_name " +
+                        "SELECT department.dept_name, roles.role_name, roles.salary, employee.first_name, employee.last_name " +
                         "FROM department " +
-                        "INNER JOIN roles ON department.dept_id = roles.dept_id " +
-                        "INNER JOIN employee ON roles.role_id = employee.role_id;";
+                        "INNER JOIN roles ON (department.dept_id = roles.dept_id) " +
+                        "INNER JOIN employee ON (roles.role_id = employee.role_id) " +
+                        "WHERE (department.dept_name = ?)";
                     connection.query(query, [response.allDepts],
                         (err, res) => {
                             if (err) throw err
@@ -113,7 +115,47 @@ const viewAllDept = () => {
                     );
                 });
         });
-}
+};
+
+// View Employees by Roles
+const viewAllRoles = () => {
+    connection.query(`SELECT * FROM roles`,
+        (err, res) => {
+            inquirer
+                .prompt([
+                    {
+                        name: 'allRoles',
+                        type: 'list',
+                        message: 'Which Roles Would You Like To View?',
+                        choices() {
+                            const choiceArray = [];
+                            res.forEach(({ role_name }) => {
+                                choiceArray.push(role_name);
+                            });
+                            return choiceArray;
+                        }
+                    },
+                ]).then((response) => {
+                    console.log(res)
+                    // USE ? IN QUERY and pass in variable inside the [] in connection.query
+                    let query =
+                        "SELECT roles.role_name, employee.first_name, employee.last_name, roles.salary, department.dept_name " +
+                        "FROM roles " +
+                        "INNER JOIN employee ON (employee.role_id = roles.role_id) " +
+                        "INNER JOIN department ON (roles.dept_id = department.dept_id) " +
+                        "WHERE (roles.role_name = ?);";
+                    connection.query(query, [response.allRoles],
+                        (err, res) => {
+                            if (err) throw err
+                            log(chalk.blue.bold('\n--------------------------'));
+                            log(chalk.blue.bold(`Viewing Employees By Role\n`));
+                            console.table(res);
+                            startMenu();
+                        }
+                    );
+                });
+        });
+};
 
 
 
