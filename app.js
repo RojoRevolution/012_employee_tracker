@@ -28,19 +28,25 @@ const startOptions = [
     }
 ]
 
-// Intro
+// ======================= 
+// Intro Function that only display a log on the screen
 const init = () => {
-    log(chalk.blue('\n-------------------------------------------'))
-    log(chalk.red('Welcome to The Employee Tracker Application'));
+    log(chalk.blue('-------------------------------------------'))
+    log(chalk.blue('-------------------------------------------\n'))
+    log(chalk.red('      Welcome to The Planet Express   '));
+    log(chalk.red('      Employee Tracker Application   \n'));
+    log(chalk.blue('------------------------------------------- '))
     log(chalk.blue('------------------------------------------- \n'))
     startMenu();
 };
 
+// ======================= 
 // Initial Menu / Choices
 const startMenu = () => {
     log(chalk.green('\n========================================= \n'))
     inquirer.prompt(startOptions)
         .then((response) => {
+            // Switch case routes where each prompt will take the user
             switch (response.action) {
                 case 'View All Empoyees':
                     viewAll();
@@ -54,15 +60,22 @@ const startMenu = () => {
                     viewAllRoles();
                     break;
                 case '--- Exit App ---':
-                    log(chalk.blue('\nxxxxxxxxxxxxxxxxxxxxxxxxxx'))
+                    log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
                     log(chalk.red('Terminating Applicaiton...'))
-                    log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxx \n'))
+                    log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
+                    log(chalk.red("Remember: You're Not Paid To Think!"))
+                    log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
+                    log(chalk.red("A Mindless Worker Is A Happy Worker!"))
+                    log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
+                    log(chalk.red("Shut Up And Do Your Job!"))
+                    log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
                     connection.end();
                     break;
             }
         })
 }
 
+// ======================= 
 // View All Employees
 const viewAll = () => {
     let query =
@@ -78,6 +91,8 @@ const viewAll = () => {
             startMenu();
         })
 }
+
+// ======================= 
 // View All Employees By Department
 const viewAllDept = () => {
     connection.query(`SELECT * FROM department`,
@@ -117,6 +132,7 @@ const viewAllDept = () => {
         });
 };
 
+// ======================= 
 // View Employees by Roles
 const viewAllRoles = () => {
     connection.query(`SELECT * FROM roles`,
@@ -136,7 +152,6 @@ const viewAllRoles = () => {
                         }
                     },
                 ]).then((response) => {
-                    console.log(res)
                     // USE ? IN QUERY and pass in variable inside the [] in connection.query
                     let query =
                         "SELECT roles.role_name, employee.first_name, employee.last_name, roles.salary, department.dept_name " +
