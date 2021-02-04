@@ -24,7 +24,7 @@ const startOptions = [
         type: 'list',
         message: 'What would you like to do?',
         name: 'action',
-        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', '--- Exit App ---']
+        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', 'Update Roles', '--- Exit App ---']
     }
 ]
 
@@ -58,6 +58,9 @@ const startMenu = () => {
 
                 case 'View All Employees by Role':
                     viewAllRoles();
+                    break;
+                case 'Update Roles':
+                    updateRole();
                     break;
                 case '--- Exit App ---':
                     log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
@@ -173,6 +176,43 @@ const viewAllRoles = () => {
 };
 
 
+// ======================= 
+// Update Role
+const updateRole = () => {
+    connection.query(`SELECT role_id, role_name FROM roles`,
+        (err, res) => {
+            log(chalk.red('==============================='))
+            console.table(res);
+            inquirer
+                .prompt([
+                    {
+                        name: 'chooseRole',
+                        type: 'input',
+                        message: 'Based on the Table Above, Enter The Role_ID You Want To Update',
+                    }, {
+                        name: 'updateRole',
+                        type: 'input',
+                        message: 'What Will This Role Be Updated To?',
+                    },
+                ]).then((response) => {
+                    let roleID = response.chooseRole;
+                    let newRole = response.updateRole;
+
+                    let query =
+                        "UPDATE roles SET role_name = ? WHERE role_id = 1;";
+                    connection.query(query, [newRole, roleID],
+                        (err, res) => {
+                            if (err) throw err
+                            log(chalk.blue.bold('\n--------------------------'));
+                            log(chalk.red.bold(`      Role Updated\n`));
+                            log(chalk.blue.bold('--------------------------\n'));
+                            // console.table(res);
+                            startMenu();
+                        }
+                    );
+                });
+        });
+};
 
 
 
