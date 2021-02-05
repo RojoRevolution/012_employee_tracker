@@ -24,7 +24,7 @@ const startOptions = [
         type: 'list',
         message: 'What would you like to do?',
         name: 'action',
-        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', 'Add New Department', 'Add New Role', 'Add New Employee', 'Update Roles', '--- Exit App ---']
+        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', 'Add New Department', 'Add New Role', 'Add New Employee', 'Update Roles', 'Update Department', '--- Exit App ---']
     }
 ]
 
@@ -70,6 +70,9 @@ const startMenu = () => {
                     break;
                 case 'Update Roles':
                     updateRole();
+                    break;
+                case 'Update Department':
+                    updateDept();
                     break;
                 case '--- Exit App ---':
                     log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
@@ -449,12 +452,50 @@ const updateRole = () => {
                     let newRole = response.updateRole;
 
                     let query =
-                        "UPDATE roles SET role_name = ? WHERE role_id = 1;";
+                        "UPDATE roles SET role_name = ? WHERE role_id = ?;";
                     connection.query(query, [newRole, roleID],
                         (err, res) => {
                             if (err) throw err
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Role Updated\n`));
+                            log(chalk.blue.bold('--------------------------\n'));
+                            // console.table(res);
+                            startMenu();
+                        }
+                    );
+                });
+        });
+};
+
+// ======================= 
+// Update Department
+const updateDept = () => {
+    connection.query(`SELECT dept_name FROM department`,
+        (err, res) => {
+            log(chalk.red('==============================='))
+            console.table(res);
+            inquirer
+                .prompt([
+                    {
+                        name: 'chooseRole',
+                        type: 'input',
+                        message: 'Based on the Table Above, Enter The Department ID You Want To Update',
+                    }, {
+                        name: 'updateRole',
+                        type: 'input',
+                        message: 'What will this department be named?',
+                    },
+                ]).then((response) => {
+                    let deptID = response.chooseRole;
+                    let deptUpdate = response.updateRole;
+
+                    let query =
+                        "UPDATE roles SET dept_name = ? WHERE role_id = ?;";
+                    connection.query(query, [deptUpdate, deptID],
+                        (err, res) => {
+                            if (err) throw err
+                            log(chalk.blue.bold('\n--------------------------'));
+                            log(chalk.red.bold(`      Department Updated\n`));
                             log(chalk.blue.bold('--------------------------\n'));
                             // console.table(res);
                             startMenu();
