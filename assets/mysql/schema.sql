@@ -1,3 +1,6 @@
+-- REMOVE IF YOU DON"T WANT TO DELETE EXISTING DB
+DROP DATABASE databasename;
+
 CREATE database employees_db;
 
 USE employees_db;
