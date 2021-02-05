@@ -4,13 +4,15 @@ const log = console.log;
 const cTable = require('console.table');
 const inquirer = require("inquirer");
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'squalus',
-    database: 'employees_db',
-});
+const connection = require("./connection");
+
+// const connection = mysql.createConnection({
+//     host: 'localhost',
+//     port: 3306,
+//     user: 'root',
+//     password: 'squalus',
+//     database: 'employees_db',
+// });
 
 // Connect
 connection.connect((err) => {
@@ -339,13 +341,13 @@ const addRole = () => {
         (err, res) => {
             let deptName = [];
             res.forEach(({ dept_name }) => {
-                [
-                    {
-                        deptID: res.dept_id,
-                        deptName = res.dept_name,
-                    },
-                ]
-                // deptName.push(dept_name);
+                // [
+                //     {
+                //         deptID: res.dept_id,
+                //         deptName = res.dept_name,
+                //     },
+                // ]
+                deptName.push(dept_name);
             });
             console.log()
 
@@ -470,27 +472,27 @@ const updateRole = () => {
 // ======================= 
 // Update Department
 const updateDept = () => {
-    connection.query(`SELECT dept_name FROM department`,
+    connection.query(`SELECT dept_id, dept_name FROM department`,
         (err, res) => {
             log(chalk.red('==============================='))
             console.table(res);
             inquirer
                 .prompt([
                     {
-                        name: 'chooseRole',
+                        name: 'chooseDept',
                         type: 'input',
                         message: 'Based on the Table Above, Enter The Department ID You Want To Update',
                     }, {
-                        name: 'updateRole',
+                        name: 'updateDept',
                         type: 'input',
                         message: 'What will this department be named?',
                     },
                 ]).then((response) => {
-                    let deptID = response.chooseRole;
-                    let deptUpdate = response.updateRole;
+                    let deptID = response.chooseDept;
+                    let deptUpdate = response.updateDept;
 
                     let query =
-                        "UPDATE roles SET dept_name = ? WHERE role_id = ?;";
+                        "UPDATE department SET dept_name = ? WHERE dept_id = ?;";
                     connection.query(query, [deptUpdate, deptID],
                         (err, res) => {
                             if (err) throw err
