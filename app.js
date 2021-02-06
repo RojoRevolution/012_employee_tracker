@@ -420,8 +420,6 @@ const addRole = (deptID, deptName) => {
                 choices: deptName
             },
         ]).then((response) => {
-            // let department = response.deptChoice;
-            console.log(typeof department)
 
             for (let i = 1; i < deptID.length; i++) {
                 if (response.deptChoice === deptName[i]) {
