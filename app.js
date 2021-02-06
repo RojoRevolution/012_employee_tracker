@@ -26,7 +26,7 @@ const startOptions = [
         type: 'list',
         message: 'What would you like to do?',
         name: 'action',
-        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', 'Add New Department', 'Add New Role', 'Add New Employee', 'Update Roles', 'Update Department', '--- Exit App ---']
+        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', 'Add New Department', 'Add New Role', 'Add New Employee', 'Update Roles', 'Update Department', 'Delete a Department', 'Delete a Role', 'Delete an Employee', '--- Exit App ---']
     }
 ]
 
@@ -75,6 +75,15 @@ const startMenu = () => {
                     break;
                 case 'Update Department':
                     updateDept();
+                    break;
+                case 'Delete a Department':
+                    deleteDept();
+                    break;
+                case 'Delete a Role':
+                    deleteRole();
+                    break;
+                case 'Delete an Employee':
+                    deleteEmployee();
                     break;
                 case '--- Exit App ---':
                     log(chalk.blue('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'))
@@ -522,7 +531,100 @@ const updateDept = () => {
         });
 };
 
+// ================================================
+//  ============== DELETE FUNCTIONS ===============
+// ================================================
 
+const deleteDept = () => {
+    connection.query(`SELECT * FROM department`,
+        (err, res) => {
+            log(chalk.red('==============================='))
+            console.table(res);
+
+            inquirer
+                .prompt([
+                    {
+                        name: 'deptID',
+                        type: 'input',
+                        message: 'Based on the table above, enter the ID of the department you would like to delete:',
+
+                    },
+                ]).then((response) => {
+                    connection.query('DELETE FROM department WHERE dept_id = ?', [response.deptID],
+                        (err, res) => {
+                            if (err) throw err
+                            log(chalk.blue.bold('\n--------------------------'));
+                            log(chalk.red.bold(`      Department Deleted\n`));
+                            log(chalk.blue.bold('--------------------------\n'));
+                            // console.table(res);
+                            startMenu();
+                        }
+                    );
+                });
+        });
+};
+
+const deleteRole = () => {
+    connection.query(`SELECT role_id, role_name FROM roles`,
+        (err, res) => {
+            log(chalk.red('==============================='))
+            console.table(res);
+
+            inquirer
+                .prompt([
+                    {
+                        name: 'roleID',
+                        type: 'input',
+                        message: 'Based on the table above, enter the ID of the role you would like to delete:',
+
+                    },
+                ]).then((response) => {
+
+
+                    connection.query('DELETE FROM roles WHERE role_id = ?', [response.roleID],
+                        (err, res) => {
+                            if (err) throw err
+                            log(chalk.blue.bold('\n--------------------------'));
+                            log(chalk.red.bold(`      Role Deleted\n`));
+                            log(chalk.blue.bold('--------------------------\n'));
+                            // console.table(res);
+                            startMenu();
+                        }
+                    );
+                });
+        });
+};
+
+const deleteEmployee = () => {
+    connection.query(`SELECT employee_id, first_name, last_name FROM employee`,
+        (err, res) => {
+            log(chalk.red('==============================='))
+            console.table(res);
+
+            inquirer
+                .prompt([
+                    {
+                        name: 'employeeID',
+                        type: 'input',
+                        message: 'Based on the table above, enter the ID of the employee you wish to fire:',
+
+                    },
+                ]).then((response) => {
+
+
+                    connection.query('DELETE FROM employee WHERE employee_id = ?', [response.employeeID],
+                        (err, res) => {
+                            if (err) throw err
+                            log(chalk.blue.bold('\n--------------------------'));
+                            log(chalk.red.bold(`      Employee Terminated\n`));
+                            log(chalk.blue.bold('--------------------------\n'));
+                            // console.table(res);
+                            startMenu();
+                        }
+                    );
+                });
+        });
+};
 
 
 
