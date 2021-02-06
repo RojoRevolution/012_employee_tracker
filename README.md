@@ -2,7 +2,7 @@
 
 [Video of app in usage](https://youtu.be/XoMcnG9mgs0)
 
-![Image of Employee Tracker App](images/app_image.png)
+![Image of Employee Tracker App](images/emplpyee_tracker_app.png)
 
 
 # :zap: Description
