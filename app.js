@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: '',
+    password: 'squalus',
     database: 'employees_db',
 });
 
@@ -382,10 +382,10 @@ const addEmployee = (roleID, roleName) => {
 };
 
 const addRole = (deptID, deptName) => {
-    console.log(deptName)
-    console.log(deptID)
-    let id = [];
+    // let id = [];
+    let id = "";
     console.log(id)
+    console.log(typeof id)
     inquirer
         .prompt([
             {
@@ -420,22 +420,18 @@ const addRole = (deptID, deptName) => {
                 choices: deptName
             },
         ]).then((response) => {
-
-            for (let i = 1; i < deptID.length; i++) {
+            console.log(deptName)
+            console.log(deptID)
+            for (let i = 0; i < deptID.length; i++) {
                 if (response.deptChoice === deptName[i]) {
-                    console.log('IN THE LOOP')
-                    id.push(deptID[i])
-                } else {
-                    id = null;
-                };
+                    id += deptID[i]
+                }
             };
-            console.log(id)
-
 
             let query =
                 'INSERT INTO roles(role_name, salary, dept_id) ' +
                 'VALUES(?, ?, ?)';
-            connection.query(query, [response.roleName, response.salary, id],
+            connection.query(query, [response.roleName, response.salary, parseInt(id)],
                 (err, res) => {
                     if (err) throw err
                     log(chalk.blue.bold('\n--------------------------'));
