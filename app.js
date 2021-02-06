@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: 'squalus',
+    password: '',
     database: 'employees_db',
 });
 
@@ -26,7 +26,7 @@ const startOptions = [
         type: 'list',
         message: 'What would you like to do?',
         name: 'action',
-        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', 'Add New Department', 'Add New Role', 'Add New Employee', 'Update Roles', 'Update Department', 'Delete a Department', 'Delete a Role', 'Delete an Employee', '--- Exit App ---']
+        choices: ['View All Empoyees', 'View All Empoyees by Department', 'View All Employees by Role', 'Add New Department', 'Add New Role', 'Add New Employee', 'Update Roles', 'Update Department', 'Update Employee Manager', 'Delete a Department', 'Delete a Role', 'Delete an Employee', '--- Exit App ---']
     }
 ]
 
@@ -75,6 +75,9 @@ const startMenu = () => {
                     break;
                 case 'Update Department':
                     updateDept();
+                    break;
+                case 'Update Employee Manager':
+                    updateManager();
                     break;
                 case 'Delete a Department':
                     deleteDept();
@@ -379,9 +382,10 @@ const addEmployee = (roleID, roleName) => {
 };
 
 const addRole = (deptID, deptName) => {
-    // Inquirer Questions
+    console.log(deptName)
     console.log(deptID)
-    let id;
+    let id = [];
+    console.log(id)
     inquirer
         .prompt([
             {
@@ -416,23 +420,24 @@ const addRole = (deptID, deptName) => {
                 choices: deptName
             },
         ]).then((response) => {
-            let department = response.deptChoice;
-            console.log(department)
+            // let department = response.deptChoice;
+            console.log(typeof department)
 
-            for (let i = 1; i < deptName.length; i++) {
-                if (department === deptName) {
-                    // console.log(roleName)
-                    id = deptID[i]
-                    console.log(id)
+            for (let i = 1; i < deptID.length; i++) {
+                if (response.deptChoice === deptName[i]) {
+                    console.log('IN THE LOOP')
+                    id.push(deptID[i])
                 } else {
-                    deptID = null;
+                    id = null;
                 };
             };
+            console.log(id)
+
 
             let query =
                 'INSERT INTO roles(role_name, salary, dept_id) ' +
                 'VALUES(?, ?, ?)';
-            connection.query(query, [response.roleName, response.salary, deptID],
+            connection.query(query, [response.roleName, response.salary, id],
                 (err, res) => {
                     if (err) throw err
                     log(chalk.blue.bold('\n--------------------------'));
@@ -445,10 +450,6 @@ const addRole = (deptID, deptName) => {
         });
 
 };
-
-
-
-
 
 
 // ================================================
@@ -484,6 +485,42 @@ const updateRole = () => {
                             if (err) throw err
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Role Updated\n`));
+                            log(chalk.blue.bold('--------------------------\n'));
+                            // console.table(res);
+                            startMenu();
+                        }
+                    );
+                });
+        });
+};
+
+const updateManager = () => {
+    connection.query(`SELECT employee_id, first_name, last_name FROM employee`,
+        (err, res) => {
+            log(chalk.red('==============================='))
+            console.table(res);
+            inquirer
+                .prompt([
+                    {
+                        name: 'employeeID',
+                        type: 'input',
+                        message: 'Based on the table above, enter the employee ID you wish to update',
+                    },
+                    {
+                        name: 'managerID',
+                        type: 'input',
+                        message: 'Based on the table above, enter the employee ID of the manager',
+                    },
+
+                ]).then((response) => {
+
+                    let query =
+                        "UPDATE employee SET manager_id = ? WHERE role_id = ?;";
+                    connection.query(query, [response.managerID, response.employeeID],
+                        (err, res) => {
+                            if (err) throw err
+                            log(chalk.blue.bold('\n--------------------------'));
+                            log(chalk.red.bold(`      Employee Manager Updated\n`));
                             log(chalk.blue.bold('--------------------------\n'));
                             // console.table(res);
                             startMenu();
