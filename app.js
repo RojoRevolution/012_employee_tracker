@@ -4,23 +4,24 @@ const log = console.log;
 const cTable = require('console.table');
 const inquirer = require("inquirer");
 
-// const connection = require("./connection");
-
+// Connection Info
 const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     user: 'root',
-    password: 'squalus',
+    // Enter Your Own Password Yo!
+    password: '',
     database: 'employees_db',
 });
 
-// Connect
+// Makes Connection
 connection.connect((err) => {
     if (err) throw err;
     console.log(`Connected as id ${connection.threadId}`);
     init();
 });
 
+// Display initial Menu of Questions
 const startOptions = [
     {
         type: 'list',
@@ -31,7 +32,7 @@ const startOptions = [
 ]
 
 // ======================= 
-// Intro Function that only display a log on the screen
+// Intro Function that only display a log on the screen when app starts
 const init = () => {
     log(chalk.blue('-------------------------------------------'))
     log(chalk.blue('-------------------------------------------\n'))
@@ -43,7 +44,7 @@ const init = () => {
 };
 
 // ======================= 
-// Initial Menu / Choices
+// Function shows initial menu, and acts as the main router depending on your choices
 const startMenu = () => {
     log(chalk.green('\n========================================= \n'))
     inquirer.prompt(startOptions)
@@ -107,6 +108,8 @@ const startMenu = () => {
 // ================================================
 //  =============== GET ROLES ===============
 // ================================================
+
+// Helper function that grabs all Role Names and Role Id's for use in other functions
 const getRoles = () => {
     let roleId = [];
     let roleName = [];
@@ -115,28 +118,35 @@ const getRoles = () => {
     connection.query(query,
         (err, res) => {
             if (err) throw err;
+            // pushes each available row of role_id data into a new array for later use
             res.forEach(({ role_id }) => {
                 roleId.push(role_id);
             });
+            // pushes each available row of role_name data into a new array for later use
             res.forEach(({ role_name }) => {
                 roleName.push(role_name);
             });
+            // Pass the arrays containing all role IDs and role names into the add Employee Function
             addEmployee(roleId, roleName);
         })
 }
 
+// Helper function that grabs all Dept Names and Dept Id's for use in other functions
 const getDept = () => {
     let deptID = [];
     let deptName = [];
     connection.query('SELECT * FROM department', (err, res) => {
         if (err) throw err;
+        // pushes each available row of dept_id data into a new array for later use
         res.forEach(({ dept_id }) => {
             deptID.push(dept_id);
         });
+        // pushes each available row of dept_name data into a new array for later use
         res.forEach(({ dept_name }) => {
             deptName.push(dept_name);
-
         });
+
+        // Pass the arrays containing all dept IDs and dept names into the add addRole Function
         addRole(deptID, deptName)
     });
 
@@ -160,6 +170,7 @@ const viewAll = () => {
             log(chalk.blue.bold('\n--------------------------'))
             log(chalk.blue.bold('Viewing All Employees\n'))
             console.table(res);
+            // return to main menu
             startMenu();
         })
 }
@@ -184,7 +195,6 @@ const viewAllDept = () => {
                         }
                     },
                 ]).then((response) => {
-                    // USE ? IN QUERY and pass in variable inside the [] in connection.query
                     let query =
                         "SELECT department.dept_name, roles.role_name, roles.salary, employee.first_name, employee.last_name " +
                         "FROM department " +
@@ -197,6 +207,7 @@ const viewAllDept = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.blue.bold(`Viewing Employees By Department\n`));
                             console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -224,7 +235,6 @@ const viewAllRoles = () => {
                         }
                     },
                 ]).then((response) => {
-                    // USE ? IN QUERY and pass in variable inside the [] in connection.query
                     let query =
                         "SELECT roles.role_name, employee.first_name, employee.last_name, roles.salary, department.dept_name " +
                         "FROM roles " +
@@ -237,6 +247,7 @@ const viewAllRoles = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.blue.bold(`Viewing Employees By Role\n`));
                             console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -269,7 +280,6 @@ const addDepartment = () => {
                     },
                 ]).then((response) => {
                     let dept = response.deptName;
-
                     let query =
                         'INSERT INTO department(dept_name) ' +
                         'VALUES(?)';
@@ -279,7 +289,7 @@ const addDepartment = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Department Added`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -297,10 +307,12 @@ const addEmployee = (roleID, roleName) => {
             let employee = [];
             let employeeID = [];
 
+            // pushes each row of first_name data into a new array
             res.forEach(({ first_name }) => {
                 employee.push(first_name);
             });
 
+            // pushes each row of employee ID data into a new array
             res.forEach(({ employee_id }) => {
                 employeeID.push(employee_id);
             });
@@ -332,18 +344,17 @@ const addEmployee = (roleID, roleName) => {
                 ]).then((response) => {
                     let firstName = response.firstName;
                     let lastName = response.lastName;
-                    console.log(roleID)
-                    console.log(employee)
+
+                    // for loop iterates through array, and checks if the response to inquirer question role matches an item in the roleName array, when match is found, push id[i] into it's own variable
                     for (var i = 0; i < roleID.length; i++) {
                         if (response.role === roleName[i]) {
-                            console.log('Role MATCH')
                             rID += roleID[i]
                         }
                     };
 
+                    // for loop iterates through array, and checks if the response to inquirer question employee manager name matches an item in the employee name array, when match is found, push empployeeid[i] into it's own variable
                     for (var i = 0; i < employee.length; i++) {
                         if (response.manager === employee[i]) {
-                            console.log('Manager MATCH')
                             mID += employeeID[i]
                         }
                     };
@@ -351,13 +362,14 @@ const addEmployee = (roleID, roleName) => {
                     let query =
                         'INSERT INTO employee(first_name, last_name, role_id, manager_id) ' +
                         'VALUES(?, ?, ?, ?)';
+                    // parse the stored variables to ensure they are numbers
                     connection.query(query, [firstName, lastName, parseInt(rID), parseInt(mID)],
                         (err, res) => {
                             if (err) throw err
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Employee Added`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -367,8 +379,7 @@ const addEmployee = (roleID, roleName) => {
 
 const addRole = (deptID, deptName) => {
     let id = "";
-    console.log(id)
-    console.log(typeof id)
+
     inquirer
         .prompt([
             {
@@ -403,7 +414,7 @@ const addRole = (deptID, deptName) => {
                 choices: deptName
             },
         ]).then((response) => {
-
+            // for loop iterates and checks if response to inquirer question deptChoice matches an item in the deptName array. If match is found, push the deptID[i] index into it's own variable
             for (let i = 0; i < deptID.length; i++) {
                 if (response.deptChoice === deptName[i]) {
                     id += deptID[i]
@@ -413,13 +424,14 @@ const addRole = (deptID, deptName) => {
             let query =
                 'INSERT INTO roles(role_name, salary, dept_id) ' +
                 'VALUES(?, ?, ?)';
+            // Parse the ID so it ends up as a number
             connection.query(query, [response.roleName, response.salary, parseInt(id)],
                 (err, res) => {
                     if (err) throw err
                     log(chalk.blue.bold('\n--------------------------'));
                     log(chalk.red.bold(`      Role Added`));
                     log(chalk.blue.bold('--------------------------\n'));
-                    // console.table(res);
+                    // return to main menu
                     startMenu();
                 }
             );
@@ -437,6 +449,7 @@ const addRole = (deptID, deptName) => {
 const updateRole = () => {
     connection.query(`SELECT role_id, role_name FROM roles`,
         (err, res) => {
+            // Log an entire list of Id's + Role Names to choose from
             log(chalk.red('==============================='))
             console.table(res);
             inquirer
@@ -462,7 +475,7 @@ const updateRole = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Role Updated\n`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -473,6 +486,8 @@ const updateRole = () => {
 const updateManager = () => {
     connection.query(`SELECT employee_id, first_name, last_name FROM employee`,
         (err, res) => {
+            // Log an entire list of Id's + Names to choose from
+
             log(chalk.red('==============================='))
             console.table(res);
             inquirer
@@ -498,7 +513,7 @@ const updateManager = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Employee Manager Updated\n`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -511,6 +526,7 @@ const updateManager = () => {
 const updateDept = () => {
     connection.query(`SELECT dept_id, dept_name FROM department`,
         (err, res) => {
+            // Log an entire list of dept Id's + dept Names to choose from
             log(chalk.red('==============================='))
             console.table(res);
             inquirer
@@ -536,7 +552,7 @@ const updateDept = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Department Updated\n`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -551,6 +567,7 @@ const updateDept = () => {
 const deleteDept = () => {
     connection.query(`SELECT * FROM department`,
         (err, res) => {
+            // Log an entire list of dept Id's + dept Names to choose from
             log(chalk.red('==============================='))
             console.table(res);
 
@@ -569,7 +586,7 @@ const deleteDept = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Department Deleted\n`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -580,6 +597,7 @@ const deleteDept = () => {
 const deleteRole = () => {
     connection.query(`SELECT role_id, role_name FROM roles`,
         (err, res) => {
+            // Log an entire list of role Id's + role Names to choose from
             log(chalk.red('==============================='))
             console.table(res);
 
@@ -600,7 +618,7 @@ const deleteRole = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Role Deleted\n`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
@@ -611,6 +629,7 @@ const deleteRole = () => {
 const deleteEmployee = () => {
     connection.query(`SELECT employee_id, first_name, last_name FROM employee`,
         (err, res) => {
+            // Log an entire list of employee Id's + employee Names to choose from
             log(chalk.red('==============================='))
             console.table(res);
 
@@ -631,7 +650,7 @@ const deleteEmployee = () => {
                             log(chalk.blue.bold('\n--------------------------'));
                             log(chalk.red.bold(`      Employee Terminated\n`));
                             log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
+                            // return to main menu
                             startMenu();
                         }
                     );
