@@ -5,7 +5,7 @@ VALUES
 ('Crew'),
 ('Lab'),
 ('Management'),
-('Custodial')
+('Custodial');
 
 
 INSERT INTO roles(role_name, salary, dept_id)
@@ -16,7 +16,7 @@ VALUES
 ('Accountant', 50000, 3),
 ('CEO', 100000, 2),
 ('Janitor', 75000, 4),
-('Intern', 0, 2)
+('Intern', 0, 2);
 
 
 INSERT INTO employee(first_name, last_name, role_id, manager_id)
@@ -27,4 +27,4 @@ VALUES
 ('Hermes', 'Conrad', 4, 5),
 ('Hubert', 'Farnsworth', 5, null),
 ('Amy', 'Wong', 5, 5),
-('Scruffy', null, 5, 5)
+('Scruffy', null, 5, 5);

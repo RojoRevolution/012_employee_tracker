@@ -1,5 +1,5 @@
 -- REMOVE IF YOU DON"T WANT TO DELETE EXISTING DB
-DROP DATABASE employees_db;
+-- DROP DATABASE employees_db;
 
 CREATE database employees_db;
 

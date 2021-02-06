@@ -480,7 +480,7 @@ const updateManager = () => {
                     {
                         name: 'employeeID',
                         type: 'input',
-                        message: 'Based on the table above, enter the employee ID you wish to update',
+                        message: 'Based on the table above, enter the ID of the employee you wish to update',
                     },
                     {
                         name: 'managerID',
