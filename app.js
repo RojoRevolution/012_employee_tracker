@@ -291,26 +291,19 @@ const addEmployee = (roleID, roleName) => {
     connection.query(`SELECT employee_id, first_name FROM employee`,
         (err, res) => {
 
-            console.log(res)
+            let rID = "";
+            let mID = "";
+
             let employee = [];
             let employeeID = [];
-
-
 
             res.forEach(({ first_name }) => {
                 employee.push(first_name);
             });
 
-            console.log(employee)
-
             res.forEach(({ employee_id }) => {
-                employee.push(employee_id);
+                employeeID.push(employee_id);
             });
-            console.log(employeeID)
-
-            //         // console.log(res);
-            //         // console.log(res.role_name);
-            //         // console.log(res.role_id);
 
             // Inquirer Questions
             inquirer
@@ -339,35 +332,26 @@ const addEmployee = (roleID, roleName) => {
                 ]).then((response) => {
                     let firstName = response.firstName;
                     let lastName = response.lastName;
-                    let choiceRole = response.role;
-                    let role_id = 0;
-                    let manager = response.manager;
-                    let manager_id = 0;
-
-                    for (var i = 1; i < roleID.length; i++) {
-                        if (choiceRole === roleName) {
-                            // console.log(roleName)
-                            role_id = i;
-                        } else {
-                            role_id = null;
-                        };
+                    console.log(roleID)
+                    console.log(employee)
+                    for (var i = 0; i < roleID.length; i++) {
+                        if (response.role === roleName[i]) {
+                            console.log('Role MATCH')
+                            rID += roleID[i]
+                        }
                     };
 
-                    for (var i = 1; i < employee.length; i++) {
-                        if (manager === employee) {
-                            // console.log(roleName)
-                            manager_id = i;
-                        } else {
-                            manager = null;
-                        };
+                    for (var i = 0; i < employee.length; i++) {
+                        if (response.manager === employee[i]) {
+                            console.log('Manager MATCH')
+                            mID += employeeID[i]
+                        }
                     };
 
-                    console.log(role_id);
-                    console.log(roleName)
                     let query =
                         'INSERT INTO employee(first_name, last_name, role_id, manager_id) ' +
                         'VALUES(?, ?, ?, ?)';
-                    connection.query(query, [firstName, lastName, role_id, manager_id],
+                    connection.query(query, [firstName, lastName, parseInt(rID), parseInt(mID)],
                         (err, res) => {
                             if (err) throw err
                             log(chalk.blue.bold('\n--------------------------'));
@@ -382,7 +366,6 @@ const addEmployee = (roleID, roleName) => {
 };
 
 const addRole = (deptID, deptName) => {
-    // let id = [];
     let id = "";
     console.log(id)
     console.log(typeof id)
@@ -420,8 +403,7 @@ const addRole = (deptID, deptName) => {
                 choices: deptName
             },
         ]).then((response) => {
-            console.log(deptName)
-            console.log(deptID)
+
             for (let i = 0; i < deptID.length; i++) {
                 if (response.deptChoice === deptName[i]) {
                     id += deptID[i]
