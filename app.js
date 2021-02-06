@@ -4,15 +4,15 @@ const log = console.log;
 const cTable = require('console.table');
 const inquirer = require("inquirer");
 
-const connection = require("./connection");
+// const connection = require("./connection");
 
-// const connection = mysql.createConnection({
-//     host: 'localhost',
-//     port: 3306,
-//     user: 'root',
-//     password: 'squalus',
-//     database: 'employees_db',
-// });
+const connection = mysql.createConnection({
+    host: 'localhost',
+    port: 3306,
+    user: 'root',
+    password: 'squalus',
+    database: 'employees_db',
+});
 
 // Connect
 connection.connect((err) => {
@@ -65,10 +65,10 @@ const startMenu = () => {
                     addDepartment();
                     break;
                 case 'Add New Role':
-                    addRole();
+                    getDept();
                     break;
                 case 'Add New Employee':
-                    addEmployee();
+                    getRoles();
                     break;
                 case 'Update Roles':
                     updateRole();
@@ -92,9 +92,47 @@ const startMenu = () => {
         })
 }
 
+// ================================================
+//  =============== GET ROLES ===============
+// ================================================
+const getRoles = () => {
+    let roleId = [];
+    let roleName = [];
+    let query =
+        'SELECT role_id, role_name FROM employees_db.roles;';
+    connection.query(query,
+        (err, res) => {
+            if (err) throw err;
+            res.forEach(({ role_id }) => {
+                roleId.push(role_id);
+            });
+            res.forEach(({ role_name }) => {
+                roleName.push(role_name);
+            });
+            addEmployee(roleId, roleName);
+        })
+}
+
+const getDept = () => {
+    let deptID = [];
+    let deptName = [];
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        res.forEach(({ dept_id }) => {
+            deptID.push(dept_id);
+        });
+        res.forEach(({ dept_name }) => {
+            deptName.push(dept_name);
+
+        });
+        addRole(deptID, deptName)
+    });
+
+}
+
 
 // ================================================
-//  =============== VIEW FUNCTIONS ===============
+//  =============== VIEW ALL FUNCTIONS ===============
 // ================================================
 
 // ======================= 
@@ -237,26 +275,30 @@ const addDepartment = () => {
         });
 };
 
-const addEmployee = () => {
-    connection.query(`SELECT employee.employee_id, employee.first_name, employee.last_name, roles.role_id, roles.role_name FROM employee JOIN roles ON employee.role_id = roles.role_id`,
+const addEmployee = (roleID, roleName) => {
+    connection.query(`SELECT employee_id, first_name FROM employee`,
         (err, res) => {
-            let roleName = [];
-            let roleID = [];
-            res.forEach(({ role_name }) => {
-                // roleName.push(role_name);
-            });
-            res.forEach(({ role_id }) => {
-                roleID.push(role_id);
-            });
 
+            console.log(res)
             let employee = [];
+            let employeeID = [];
+
+
+
             res.forEach(({ first_name }) => {
                 employee.push(first_name);
             });
 
-            // console.log(res);
-            // console.log(res.role_name);
-            // console.log(res.role_id);
+            console.log(employee)
+
+            res.forEach(({ employee_id }) => {
+                employee.push(employee_id);
+            });
+            console.log(employeeID)
+
+            //         // console.log(res);
+            //         // console.log(res.role_name);
+            //         // console.log(res.role_id);
 
             // Inquirer Questions
             inquirer
@@ -274,25 +316,13 @@ const addEmployee = () => {
                         name: 'role',
                         type: 'list',
                         message: 'What is this employees Role',
-                        choices() {
-                            const choiceArray = ['Not Applicable',];
-                            res.forEach(({ role_name }) => {
-                                choiceArray.push(role_name);
-                            });
-                            return choiceArray;
-                        }
+                        choices: roleName,
                     },
                     {
                         name: 'manager',
                         type: 'list',
                         message: 'Who is this employees Manager?',
-                        choices() {
-                            const choiceArray = ['Not Applicable',];
-                            res.forEach(({ first_name }) => {
-                                choiceArray.push(first_name);
-                            });
-                            return choiceArray;
-                        }
+                        choices: employee,
                     },
                 ]).then((response) => {
                     let firstName = response.firstName;
@@ -319,6 +349,9 @@ const addEmployee = () => {
                             manager = null;
                         };
                     };
+
+                    console.log(role_id);
+                    console.log(roleName)
                     let query =
                         'INSERT INTO employee(first_name, last_name, role_id, manager_id) ' +
                         'VALUES(?, ?, ?, ?)';
@@ -336,90 +369,72 @@ const addEmployee = () => {
         });
 };
 
-const addRole = () => {
-    connection.query(`SELECT department.dept_id, department.dept_name FROM department `,
-        (err, res) => {
-            let deptName = [];
-            res.forEach(({ dept_name }) => {
-                // [
-                //     {
-                //         deptID: res.dept_id,
-                //         deptName = res.dept_name,
-                //     },
-                // ]
-                deptName.push(dept_name);
-            });
-            console.log()
+const addRole = (deptID, deptName) => {
+    // Inquirer Questions
+    console.log(deptID)
+    let id;
+    inquirer
+        .prompt([
+            {
+                name: 'roleName',
+                type: 'input',
+                message: 'What is the name of this role?',
+                validate: function (answer) {
+                    if (answer === "") {
+                        return console.log("A name for this role is required")
+                    } else {
+                        return true;
+                    }
 
+                }
+            }, {
+                name: 'salary',
+                type: 'input',
+                message: 'What is the salary for this role?',
+                validate: function (answer) {
+                    if (answer === "") {
+                        return console.log("A salary for this role is required")
+                    } else {
+                        return true;
+                    }
 
-            // Inquirer Questions
-            inquirer
-                .prompt([
-                    {
-                        name: 'roleName',
-                        type: 'input',
-                        message: 'What is the name of this role?',
-                        validate: function (answer) {
-                            if (answer === "") {
-                                return console.log("A name for this role is required")
-                            } else {
-                                return true;
-                            }
+                }
+            },
+            {
+                name: 'deptChoice',
+                type: 'list',
+                message: 'What is the department for this role?',
+                choices: deptName
+            },
+        ]).then((response) => {
+            let department = response.deptChoice;
+            console.log(department)
 
-                        }
-                    }, {
-                        name: 'salary',
-                        type: 'input',
-                        message: 'What is the salary for this role?',
-                        validate: function (answer) {
-                            if (answer === "") {
-                                return console.log("A salary for this role is required")
-                            } else {
-                                return true;
-                            }
+            for (let i = 1; i < deptName.length; i++) {
+                if (department === deptName) {
+                    // console.log(roleName)
+                    id = deptID[i]
+                    console.log(id)
+                } else {
+                    deptID = null;
+                };
+            };
 
-                        }
-                    },
-                    {
-                        name: 'deptName',
-                        type: 'list',
-                        message: 'What is the department for this role?',
-                        choices() {
-                            const choiceArray = ['Not Applicable',];
-                            res.forEach(({ dept_name }) => {
-                                choiceArray.push(dept_name);
-                            });
-                            return choiceArray;
-                        }
-                    },
-
-                ]).then((response) => {
-                    let dept_id;
-                    let department = response.deptName;
-                    for (var i = 1; i < deptName.length; i++) {
-                        if (department === deptName) {
-                            // console.log(roleName)
-                            dept_id += i;
-                        } else {
-                            role_id = null;
-                        };
-                    };
-
-                    let query =
-                        'INSERT INTO roles(role_name, salary, dept_id) ' +
-                        'VALUES(?, ?, ?)';
-                    connection.query(query, [response.roleName, response.salary, dept_id],
-                        (err, res) => {
-                            if (err) throw err
-                            log(chalk.blue.bold('\n--------------------------'));
-                            log(chalk.red.bold(`      Role Added`));
-                            log(chalk.blue.bold('--------------------------\n'));
-                            // console.table(res);
-                            startMenu();
-                        }
-                    );
-                });
+            let query =
+                'INSERT INTO roles(role_name, salary, dept_id) ' +
+                'VALUES(?, ?, ?)';
+            connection.query(query, [response.roleName, response.salary, deptID],
+                (err, res) => {
+                    if (err) throw err
+                    log(chalk.blue.bold('\n--------------------------'));
+                    log(chalk.red.bold(`      Role Added`));
+                    log(chalk.blue.bold('--------------------------\n'));
+                    // console.table(res);
+                    startMenu();
+                }
+            );
         });
+
 };
 
 
